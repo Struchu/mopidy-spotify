@@ -10,8 +10,7 @@ import pykka
 
 import spotify
 
-from mopidy_spotify import Extension, library, playback, playlists, web
-
+from mopidy_spotify import Extension, library, playback, playlists, web, passwordstore
 
 logger = logging.getLogger(__name__)
 
@@ -56,14 +55,19 @@ class SpotifyBackend(pykka.ThreadingActor, backend.Backend):
         self._event_loop = spotify.EventLoop(self._session)
         self._event_loop.start()
 
+        password = self._get_encrypted('password')
+        client_id = self._get_encrypted('client_id')
+        client_secret = self._get_encrypted('client_secret')
+
         self._session.login(
             self._config['spotify']['username'],
-            self._config['spotify']['password'])
+            password
+        ) 
 
         self._web_client = web.OAuthClient(
             refresh_url='https://auth.mopidy.com/spotify/token',
-            client_id=self._config['spotify']['client_id'],
-            client_secret=self._config['spotify']['client_secret'],
+            client_id=client_id,
+            client_secret=client_secret,
             proxy_config=self._config['proxy'])
 
     def on_stop(self):
@@ -141,6 +145,13 @@ class SpotifyBackend(pykka.ThreadingActor, backend.Backend):
             logger.warning(
                 'Spotify has been paused because your account is '
                 'being used somewhere else.')
+
+    def _get_encrypted(self, name):
+        pass_name = name + '_pass'
+        if self._config['spotify'][pass_name]:
+            return passwordstore.get_from_pass(self._config['spotify'][pass_name])
+        else:
+            return self._config['spotify'][name]
 
 
 def on_connection_state_changed(

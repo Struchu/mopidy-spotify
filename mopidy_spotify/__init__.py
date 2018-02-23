@@ -22,10 +22,14 @@ class Extension(ext.Extension):
         schema = super(Extension, self).get_config_schema()
 
         schema['username'] = config.String()
-        schema['password'] = config.Secret()
+        schema['password'] = config.Secret(optional=True)
 
-        schema['client_id'] = config.String()
-        schema['client_secret'] = config.Secret()
+        schema['client_id'] = config.String(optional=True)
+        schema['client_secret'] = config.Secret(optional=True)
+
+        schema['password_pass'] = config.Secret(optional=True)
+        schema['client_id_pass'] = config.String(optional=True)
+        schema['client_secret_pass'] = config.Secret(optional=True)
 
         schema['bitrate'] = config.Integer(choices=(96, 160, 320))
         schema['volume_normalization'] = config.Boolean()
