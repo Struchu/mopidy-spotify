@@ -73,10 +73,11 @@ def test_search_returns_albums_and_artists_and_tracks(
     result = provider.search({'any': ['ABBA']})
 
     web_client_mock.get.assert_called_once_with(
-        'https://api.spotify.com/v1/search',
+        'search',
         params={
             'q': '"ABBA"',
             'limit': 50,
+            'market': 'GB',
             'type': 'album,artist,track'})
 
     assert 'Searching Spotify for: "ABBA"' in caplog.text()
@@ -120,10 +121,11 @@ def test_sets_api_limit_to_album_count_when_max(
     result = provider.search({'any': ['ABBA']})
 
     web_client_mock.get.assert_called_once_with(
-        'https://api.spotify.com/v1/search',
+        'search',
         params={
             'q': '"ABBA"',
             'limit': 6,
+            'market': 'GB',
             'type': 'album,artist,track'})
 
     assert len(result.albums) == 6
@@ -140,10 +142,11 @@ def test_sets_api_limit_to_artist_count_when_max(
     result = provider.search({'any': ['ABBA']})
 
     web_client_mock.get.assert_called_once_with(
-        'https://api.spotify.com/v1/search',
+        'search',
         params={
             'q': '"ABBA"',
             'limit': 6,
+            'market': 'GB',
             'type': 'album,artist,track'})
 
     assert len(result.artists) == 6
@@ -160,10 +163,11 @@ def test_sets_api_limit_to_track_count_when_max(
     result = provider.search({'any': ['ABBA']})
 
     web_client_mock.get.assert_called_once_with(
-        'https://api.spotify.com/v1/search',
+        'search',
         params={
             'q': '"ABBA"',
             'limit': 6,
+            'market': 'GB',
             'type': 'album,artist,track'})
 
     assert len(result.tracks) == 6
@@ -179,11 +183,28 @@ def test_sets_types_parameter(
         {'any': ['ABBA']}, types=['album', 'artist'])
 
     web_client_mock.get.assert_called_once_with(
-        'https://api.spotify.com/v1/search',
+        'search',
         params={
             'q': '"ABBA"',
             'limit': 50,
+            'market': 'GB',
             'type': 'album,artist'})
+
+
+def test_sets_market_parameter_from_user_country(
+        web_client_mock, web_search_mock_large, provider, session_mock):
+    session_mock.user_country = 'SE'
+    web_client_mock.get.return_value = web_search_mock_large
+
+    provider.search({'any': ['ABBA']})
+
+    web_client_mock.get.assert_called_once_with(
+        'search',
+        params={
+            'q': '"ABBA"',
+            'limit': 50,
+            'market': 'SE',
+            'type': 'album,artist,track'})
 
 
 def test_handles_empty_response(web_client_mock, provider):
