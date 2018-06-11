@@ -65,6 +65,7 @@ class SpotifyBackend(pykka.ThreadingActor, backend.Backend):
         ) 
 
         self._web_client = web.OAuthClient(
+            base_url='https://api.spotify.com/v1',
             refresh_url='https://auth.mopidy.com/spotify/token',
             client_id=client_id,
             client_secret=client_secret,
